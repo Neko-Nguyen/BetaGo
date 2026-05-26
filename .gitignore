@@ -1,0 +1,28 @@
+# CMake build directories and generated files
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/Makefile
+/compile_commands.json
+/*.ninja*
+/*.vcxproj*
+/*.sln
+/*.user
+/*.o
+/*.obj
+/*.exe
+/*.dll
+/*.lib
+/*.pdb
+
+# VS Code workspace settings and local history
+/.history/
+.vscode/*.log
+.vscode/*.db
+.vscode/*cache*
+
+# Other generated files
+*.swp
+*~
+.DS_Store

@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CMake: configure",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["-S", ".", "-B", "build"],
+      "group": "build",
+      "problemMatcher": ["$gcc"],
+      "detail": "Configure the CMake project."
+    },
+    {
+      "label": "CMake: build",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--build", "build", "--config", "Debug"],
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$gcc"],
+      "dependsOn": "CMake: configure"
+    },
+    {
+      "label": "CMake: clean",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--build", "build", "--target", "clean", "--config", "Debug"],
+      "group": "none",
+      "problemMatcher": []
+    }
+  ]
+}
