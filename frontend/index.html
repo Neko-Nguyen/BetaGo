@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BetaGo HTML Frontend</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1>BetaGo Frontend</h1>
+        <p>Click a cell to place a stone, then inspect chain liberties and captures.</p>
+      </div>
+      <div class="toolbar">
+        <button id="blackBtn" class="color-btn selected">Black</button>
+        <button id="whiteBtn" class="color-btn">White</button>
+        <button id="resetBtn" class="action-btn">Reset</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="board-panel">
+        <div id="board" class="board"></div>
+      </section>
+      <aside class="sidebar">
+        <div class="card">
+          <h2>Current Move</h2>
+          <div id="message">Choose a color and place a stone.</div>
+        </div>
+        <div class="card">
+          <h2>Selected Cell</h2>
+          <div id="selected">None</div>
+        </div>
+        <div class="card">
+          <h2>Chain Info</h2>
+          <div id="stats">Click a stone to show its group.</div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
