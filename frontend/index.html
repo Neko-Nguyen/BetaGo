@@ -1,46 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BetaGo HTML Frontend</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BetaGo Board</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
+  <main class="shell">
+    <section class="topbar">
       <div>
-        <h1>BetaGo Frontend</h1>
-        <p>Click a cell to place a stone, then inspect chain liberties and captures.</p>
+        <h1>BetaGo</h1>
+        <p id="status">White to move</p>
       </div>
-      <div class="toolbar">
-        <button id="blackBtn" class="color-btn selected">Black</button>
-        <button id="whiteBtn" class="color-btn">White</button>
-        <button id="resetBtn" class="action-btn">Reset</button>
+      <div class="controls">
+        <label>
+          Size
+          <select id="sizeSelect">
+            <option value="9">9x9</option>
+            <option value="13">13x13</option>
+            <option value="19">19x19</option>
+          </select>
+        </label>
+        <button id="aiMove" type="button">AI Move</button>
+        <button id="simulate" type="button">Simulate</button>
+        <button id="reset" type="button">Reset</button>
       </div>
-    </header>
+    </section>
 
-    <main class="content">
-      <section class="board-panel">
-        <div id="board" class="board"></div>
-      </section>
-      <aside class="sidebar">
-        <div class="card">
-          <h2>Current Move</h2>
-          <div id="message">Choose a color and place a stone.</div>
+    <section class="workspace">
+      <div class="board-wrap">
+        <canvas id="board" width="760" height="760" aria-label="Go board"></canvas>
+      </div>
+      <aside class="panel">
+        <div class="score">
+          <div><span class="dot white"></span>White <strong id="whiteCount">0</strong></div>
+          <div><span class="dot black"></span>Black <strong id="blackCount">0</strong></div>
         </div>
-        <div class="card">
-          <h2>Selected Cell</h2>
-          <div id="selected">None</div>
+        <div class="chain-box">
+          <h2>Chain</h2>
+          <p id="chainInfo">Hover a stone</p>
         </div>
-        <div class="card">
-          <h2>Chain Info</h2>
-          <div id="stats">Click a stone to show its group.</div>
+        <div class="history-box">
+          <h2>Moves</h2>
+          <ol id="history"></ol>
         </div>
       </aside>
-    </main>
-  </div>
-
+    </section>
+  </main>
   <script src="app.js"></script>
 </body>
 </html>
