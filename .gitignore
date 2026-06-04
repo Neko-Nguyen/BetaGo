@@ -18,6 +18,10 @@
 
 # VS Code workspace settings and local history
 /.history/
+.vscode/BROWSE.VC.DB*
+.vscode/*.db
+.vscode/*.db-shm
+.vscode/*.db-wal
 .vscode/*.log
 .vscode/*.db
 .vscode/*cache*
