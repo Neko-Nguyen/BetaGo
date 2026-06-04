@@ -1,4 +1,9 @@
-﻿#include <algorithm>
+﻿#pragma once
+
+#include <algorithm>
+#include <array>
+#include <cassert>
+#include <string>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -8,14 +13,11 @@
 
 class Board {
 private:
-   int n;
-   int m;
    DisjointSet dsu;
-   std::vector<Chain> chains;
-
-   const int dirNum = 4;
-   const std::vector<int> row = {0, -1, 1, 0};
-   const std::vector<int> col = {-1, 0, 0, 1};
+   int cnt = 0;
+   static constexpr int dirNum = 4;
+   static constexpr std::array<int, dirNum> row = {0, -1, 1, 0};
+   static constexpr std::array<int, dirNum> col = {-1, 0, 0, 1};  
 
    int encodeCoord(int x, int y) const {
       return (x - 1) * m + y;
@@ -55,59 +57,6 @@ private:
          }
       }
       return static_cast<int>(liberties.size());
-   }
-
-   void recomputeChains() {
-      for (int id = 1; id <= n * m; ++id) {
-         chains[id] = Chain{};
-      }
-
-      std::vector<std::unordered_set<int>> libertySets(n * m + 1);
-      for (int id = 1; id <= n * m; ++id) {
-         if (dsu.isNodeEmpty(id)) continue;
-         int rootId = dsu.root(id);
-         if (chains[rootId].color == Color::Empty) {
-            chains[rootId].color = dsu.getNodeColor(id);
-         }
-         chains[rootId].stoneCount += 1;
-         auto [x, y] = decodeCoord(id);
-         for (int k = 0; k < dirNum; ++k) {
-            int u = x + row[k];
-            int v = y + col[k];
-            if (!isInBoard(u, v)) continue;
-            int nid = encodeCoord(u, v);
-            if (dsu.isNodeEmpty(nid)) {
-               libertySets[rootId].insert(nid);
-            }
-         }
-      }
-
-      for (int id = 1; id <= n * m; ++id) {
-         if (chains[id].color != Color::Empty) {
-            chains[id].libertyCount = static_cast<int>(libertySets[id].size());
-         }
-      }
-   }
-
-public:
-   Board(int n, int m) : n(n), m(m), dsu(n * m) {
-      chains.resize(n * m + 1);
-   }
-
-   bool isLegalMove(int x, int y, [[maybe_unused]] Color color) {
-      if (!isInBoard(x, y)) return false;
-      int id = encodeCoord(x, y);
-      return dsu.isNodeEmpty(id);
-   }
-
-   void placeStone(int x, int y, Color color) {
-      int id = encodeCoord(x, y);
-      dsu.initNode(id, color);
-      chains[id] = Chain{color, 1, countLibertiesAround(x, y)};
-
-      joinChain(x, y, color);
-      capture(x, y, color);
-      recomputeChains();
    }
 
    void joinChain(int x, int y, Color color) {
@@ -155,14 +104,115 @@ public:
       for (int id = 1; id <= n * m; ++id) {
          if (dsu.isNodeEmpty(id)) continue;
          int rootId = dsu.root(id);
-         
+
          if (capturedRoots.count(rootId)) {
             dsu.deleteNode(id);
-            chains[id] = Chain{};
             capturedCount++;
          }
       }
-
+      cnt -= capturedCount;
       return capturedCount;
+   }
+
+   void rebuildChains() {
+      chains.assign(n * m + 1, Chain{});
+      std::unordered_set<int> roots;
+      for (int id = 1; id <= n * m; ++id) {
+         if (!dsu.isNodeEmpty(id)) {
+            roots.insert(dsu.root(id));
+         }
+      }
+
+      for (int rootId : roots) {
+         chains[rootId] = Chain{
+            dsu.getNodeColor(rootId),
+            dsu.getSize(rootId),
+            countLibertiesForRoot(rootId)
+         };
+      }
+   }
+
+public:
+   int n;
+   int m;
+   std::vector<Chain> chains;
+
+   Board(int n, int m) : dsu(n * m), cnt(0), n(n), m(m) {
+      chains.assign(n * m + 1, Chain{});
+   }
+
+   bool isLegalMove(int x, int y) const {
+      if (!isInBoard(x, y)) return false;
+      int id = encodeCoord(x, y);
+      return dsu.isNodeEmpty(id);
+   }
+   
+   bool placeStone(int x, int y, Color color, std::string &error) {
+      if (!isInBoard(x, y)) {
+         error = "Move out of bounds.";
+         return false;
+      }
+      int id = encodeCoord(x, y);
+      if (!dsu.isNodeEmpty(id)) {
+         error = "Point is already occupied.";
+         return false;
+      }
+
+      dsu.initNode(id, color);
+      chains[id] = Chain{color, 1, countLibertiesAround(x, y)};
+      
+      cnt++;
+      joinChain(x, y, color);
+      rebuildChains();
+      capture(x, y, color);
+      rebuildChains();
+      if (chains[dsu.root(id)].libertyCount == 0) {
+         dsu.deleteNode(id);
+         cnt--;
+         rebuildChains();
+         error = "Suicide move is not allowed.";
+         return false;
+      }
+      return true;
+   }
+
+   int countStone(Color color) const {
+      int total = 0;
+      for (int id = 1; id <= n * m; ++id) {
+         if (!dsu.isNodeEmpty(id) && dsu.getNodeColor(id) == color) {
+            total++;
+         }
+      }
+      return total;
+   }
+
+   bool isBoardFull() const {
+      return cnt == n * m;
+   }
+
+   void reset() {
+      dsu = DisjointSet(n * m);
+      chains.assign(n * m + 1, Chain{});
+      cnt = 0;
+   }
+
+   std::vector<Color> getBoardColors() const {
+      std::vector<Color> out(n * m, Color::Empty);
+      for (int id = 1; id <= n * m; ++id) {
+         if (!dsu.isNodeEmpty(id)) {
+            out[id - 1] = dsu.getNodeColor(id);
+         }
+      }
+      return out;
+   }
+
+   std::vector<int> getRootMap() const {
+      std::vector<int> out(n * m, -1);
+      for (int id = 1; id <= n * m; ++id) {
+         if (!dsu.isNodeEmpty(id)) {
+            out[id - 1] = dsu.root(id) - 1;
+         }
+      }
+      return out;
    }
 };
